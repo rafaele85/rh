@@ -52,6 +52,9 @@ model User {
   votes         Vote[]
 
   @@map(name: "users")
+  Post    Post[]
+  Comment Comment[]
+  Vote    Vote[]
 }
 
 model VerificationRequest {
