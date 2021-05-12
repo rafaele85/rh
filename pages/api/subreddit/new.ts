@@ -6,4 +6,4 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
     const prisma = new PrismaClient();
 };
 
-export default handler();
+export default handler;
