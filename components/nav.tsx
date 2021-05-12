@@ -1,4 +1,4 @@
-import {Link, makeStyles} from "@material-ui/core";
+import {Link, makeStyles, Theme} from "@material-ui/core";
 import Select from "react-select";
 import {signIn, signOut, useSession} from "next-auth/client";
 import {useEffect, useState} from "react";
@@ -6,7 +6,7 @@ import {Subreddit} from "@prisma/client/index";
 import {useRouter} from "next/router";
 import {IValueLabel} from "../types/value-label";
 
-const useStyles = makeStyles(() => {
+const useStyles = makeStyles((theme: Theme) => {
     return {
         nav: {
             width: "100%",
@@ -24,7 +24,13 @@ const useStyles = makeStyles(() => {
             alignItems: "center",
             justifyContent: "center",
         },
-        navItem: {
+        link1: {
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        ball: {
             width: "3rem",
             height: "3rem",
             borderRadius: "9999px",
@@ -38,10 +44,21 @@ const useStyles = makeStyles(() => {
             textDecoration: "none",
             fontSize: "1.5rem",
             lineHeight: "2rem",
+            display: "none",
+            [theme.breakpoints.up("md")]: {
+                display: "block",
+            },
+            "&:hover": {
+                color: "#b2f5ea"
+            }
         },
         selectorContainer: {
             width: "33.3333%",
-            paddingRight: "1rem",
+            paddingRight: "24px",
+            [theme.breakpoints.up("md")]: {
+                paddingRight: "16px",
+                width: "33.3333%",
+            },
         },
         selector: {
             //width: "100%",
@@ -51,6 +68,10 @@ const useStyles = makeStyles(() => {
             fontWeight: 700,
             fontSize: "1.25rem",
             lineHeight: "1.75rem",
+            display: "none",
+            [theme.breakpoints.up("md")]: {
+                display: "block",
+            },
         },
         button: {
             color: "white",
@@ -60,6 +81,10 @@ const useStyles = makeStyles(() => {
             border: 0,
             outline: 0,
             cursor: "pointer",
+            whiteSpace: "nowrap",
+            "&:hover": {
+                color: "indigo"
+            }
         }
     }
 });
@@ -135,11 +160,10 @@ export const Nav = () => {
     return (
         <nav className={classes.nav}>
             <div className={classes.container}>
-                <div className={classes.navItem}>
-                    <Link href={"/"}>
-                        <span className={classes.anchor}>reddit</span>
-                    </Link>
-                </div>
+                <Link href={"/"} className={classes.link1}>
+                    <div className={classes.ball} />
+                    <span className={classes.anchor}>reddit</span>
+                </Link>
             </div>
             <div className={classes.selectorContainer}>
                 <Select options={options} className={classes.selector} onChange={handleSelect}/>
