@@ -1,6 +1,7 @@
 import { useSession} from 'next-auth/client'
 import {Main} from "../components/main";
 import {signIn} from 'next-auth/client'
+import {Nav} from "../components/nav";
 
 export default function Home() {
   const [ session, loading ] = useSession();
@@ -11,13 +12,17 @@ export default function Home() {
 
   if(session) {
     return (
-        <Main />
+        <>
+            <Nav />
+            <Main />
+        </>
     );
   }
   return (
       <>
-        Not signed in <br />
-        <button onClick={handleClick}>Sign In</button>
+          <Nav />
+          Not signed in <br />
+          <button onClick={handleClick}>Sign In</button>
       </>
   );
 }
