@@ -50,11 +50,7 @@ model User {
   posts         Post[]
   comments      Comment[]
   votes         Vote[]
-
-  @@map(name: "users")
-  Post    Post[]
-  Comment Comment[]
-  Vote    Vote[]
+  hashPassword  String
 }
 
 model VerificationRequest {
@@ -64,8 +60,6 @@ model VerificationRequest {
   expires    DateTime
   createdAt  DateTime @default(now()) @map(name: "created_at")
   updatedAt  DateTime @default(now()) @map(name: "updated_at")
-
-  @@map(name: "verification_requests")
 }
 
 model Subreddit {

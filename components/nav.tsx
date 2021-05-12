@@ -96,7 +96,7 @@ export const Nav = () => {
 
     const router = useRouter();
     const handleSelect = async (v: IValueLabel|null) => {
-        console.log("router.push ", v.value)
+        console.log("router.push ", v?.value)
         if(v) {
             await router.push("/subreddits/"+v.value);
         }

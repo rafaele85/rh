@@ -2,6 +2,7 @@ import {router} from "next/client";
 import {makeStyles} from "@material-ui/core";
 import {useEffect, useState} from "react";
 import {Subreddit} from "@prisma/client/index";
+import {Layout} from "../../components/layout";
 
 const useStyles = makeStyles(() => {
     return {
@@ -11,7 +12,9 @@ const useStyles = makeStyles(() => {
         title: {
 
         },
+        goBack: {
 
+        }
     };
 });
 
@@ -37,11 +40,21 @@ const SubReddit = () => {
         void fetchData();
     }, [router.query]);
 
+
+    const handleGoBack = async () => {
+        await router.push("/");
+    };
+
     const classes = useStyles();
     return (
-        <div className={classes.container}>
-            <h1 className={classes.title}>Welcome to subreddit {subreddit?.name}</h1>
-        </div>
+        <Layout>
+            <div className={classes.container}>
+                <h1 className={classes.title}>Welcome to subreddit {subreddit?.name}</h1>
+                <button className={classes.goBack} onClick={handleGoBack}>
+                    Go back
+                </button>
+            </div>
+        </Layout>
     );
 };
 

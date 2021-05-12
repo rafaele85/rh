@@ -3,6 +3,7 @@ import Providers, {CommonProviderOptions} from 'next-auth/providers'
 import {Awaitable} from "next-auth/internals/utils";
 import Adapters from "next-auth/adapters"
 import { PrismaClient } from "@prisma/client"
+import {sha256} from "js-sha256";
 
 type IUser = {
     id: number;
@@ -20,13 +21,16 @@ interface ICredentialInput {
     placeholder?: string
 }
 
-interface ICredentialsConfig<C extends Record<string, ICredentialInput> = {}> extends CommonProviderOptions {
+
+type ICredentialsRecord = Record<string, ICredentialInput>;
+
+interface ICredentialsConfig<C extends Record<string, ICredentialInput>> extends CommonProviderOptions {
     type: "credentials"
     credentials: C
     authorize(credentials: Record<keyof C, string>): Awaitable<User | null>
 }
 
-const credOptions: Partial<ICredentialsConfig> = {
+const credOptions: Partial<ICredentialsConfig<ICredentialsRecord>> = {
     name: 'Reddit',
 
     credentials: {
@@ -38,14 +42,20 @@ const credOptions: Partial<ICredentialsConfig> = {
         //const user = await User.findOne()
 
         console.log("credentials = ", credentials)
-
-        const user = await testUser;
-
-        if (user) {
-            return user;
-        } else {
-            return null;
+        const email = credentials.email;
+        const hashPassword = sha256(credentials.password);
+        console.log("credentials = ", email, hashPassword)
+        try {
+            const user = await prisma.user.findFirst({where: {email, hashPassword}})
+             prisma.user
+            console.log("user=", user)
+            if (user) {
+                return user;
+            }
+        } catch(err) {
+            console.error(err);
         }
+        return null;
     }
 };
 
