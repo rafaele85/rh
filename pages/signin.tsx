@@ -1,6 +1,7 @@
 import { getCsrfToken } from 'next-auth/client'
 import {GetServerSidePropsContext} from "next";
 
+
 interface IProps {
     csrfToken: string;
 }

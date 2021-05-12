@@ -1,6 +1,10 @@
 import {Link, makeStyles} from "@material-ui/core";
 import Select from "react-select";
 import {signIn, signOut, useSession} from "next-auth/client";
+import {useEffect, useState} from "react";
+import {Subreddit} from "@prisma/client/index";
+import {useRouter} from "next/router";
+import {IValueLabel} from "../types/value-label";
 
 const useStyles = makeStyles(() => {
     return {
@@ -65,13 +69,22 @@ const links = [
     {href: "https://nextjs.org/docs", label: "Docs"},
 ];
 
-const options = [
-    {value: "chocolate", label: "Chocolate"},
-    {value: "strawberry", label: "Strawberry"},
-    {value: "vanilla", label: "Vanilla"},
-]
 
 export const Nav = () => {
+
+    const [subreddits, setSubreddits] = useState<Subreddit[]>([]);
+
+    const fetchData = async () => {
+        const res = await fetch("/api/subreddit/all-subredits");
+        const sr = await res.json();
+        console.log("sr===", sr)
+        setSubreddits(sr);
+    };
+
+    useEffect(() => {
+        void fetchData();
+    }, []);
+
     const [session, loading] = useSession();
 
     const handleSignIn = async () => {
@@ -80,7 +93,19 @@ export const Nav = () => {
     const handleSignOut = async () => {
         await signOut();
     };
+
+    const router = useRouter();
+    const handleSelect = async (v: IValueLabel|null) => {
+        console.log("router.push ", v.value)
+        if(v) {
+            await router.push("/subreddits/"+v.value);
+        }
+    };
+
+
     const classes = useStyles();
+
+    const options: IValueLabel[] = subreddits.map( (sr: Subreddit) => ({label: sr["name"], value: sr["id"]}) );
 
     let jsxLogin;
     if(!session) {
@@ -117,7 +142,7 @@ export const Nav = () => {
                 </div>
             </div>
             <div className={classes.selectorContainer}>
-                <Select options={options} className={classes.selector}/>
+                <Select options={options} className={classes.selector} onChange={handleSelect}/>
             </div>
 
             <h3 className={classes.welcome}>
