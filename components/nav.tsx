@@ -1,178 +1,200 @@
-import {Link, makeStyles, Theme} from "@material-ui/core";
-import Select from "react-select";
+import {ISubredditLink} from "../types/subreddit-link";
+import {makeStyles, Theme} from "@material-ui/core";
+import Link from "next/link";
+import Select, {ActionMeta} from "react-select";
+import {IValueLabel} from "../types/value-label";
 import {signIn, signOut, useSession} from "next-auth/client";
 import {useEffect, useState} from "react";
 import {Subreddit} from "@prisma/client/index";
 import {useRouter} from "next/router";
-import {IValueLabel} from "../types/value-label";
 
 const useStyles = makeStyles((theme: Theme) => {
     return {
         nav: {
             width: "100%",
+            position: "fixed",
+            top: 0,
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            backgroundColor: "rgba(75, 85, 99, 1)",
             paddingTop: "1rem",
             paddingBottom: "1rem",
+            backgroundColor: "rgba(75, 85, 99, 1)",
+            zIndex: 100,
         },
         container: {
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "center",
-        },
-        link1: {
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
+            //justifyContent: "flex-start",
         },
         ball: {
             width: "3rem",
             height: "3rem",
-            borderRadius: "9999px",
-            backgroundColor: "#feb2b2",
-            marginRight: "1rem",
+            borderRadius: "3rem",
             marginLeft: "1rem",
+            marginRight: "1rem",
+            backgroundColor: "rgba(252, 165, 165, 1)",
         },
-        anchor: {
-            color: "white",
-            fontWeight: 600,
-            textDecoration: "none",
-            fontSize: "1.5rem",
-            lineHeight: "2rem",
+        adaptiveHide: {
             display: "none",
             [theme.breakpoints.up("md")]: {
                 display: "block",
             },
+
+        },
+        hoverIndigo: {
             "&:hover": {
-                color: "#b2f5ea"
+                color: "rgba(199, 210, 254, 1)",    //indigo-200
             }
         },
-        selectorContainer: {
-            width: "33.3333%",
-            paddingRight: "24px",
-            [theme.breakpoints.up("md")]: {
-                paddingRight: "16px",
-                width: "33.3333%",
-            },
+
+        link: {
+            color: "white",
+            fontSize: "1.5rem",   //text-2xl
+            lineHeight: "2rem",
+            fontWeight: 700,
         },
-        selector: {
-            //width: "100%",
+
+        selectContainer: {
+            width: "100%",
+            marginRight: "1rem",
+            [theme.breakpoints.up("md")]: {
+                width: "33.333333%",
+                marginRight: 0,
+            }
+        },
+        select: {
+            width: "100%",
         },
         welcome: {
             color: "white",
             fontWeight: 700,
-            fontSize: "1.25rem",
+            fontSize: "1.25rem",  //text-xl
             lineHeight: "1.75rem",
-            display: "none",
-            [theme.breakpoints.up("md")]: {
-                display: "block",
-            },
+            whiteSpace: "nowrap",
+        },
+        signContainer: {
+            color: "white",
+            fontWeight: 700,
+            marginRight: "1rem",
         },
         button: {
             color: "white",
             fontWeight: 700,
             marginRight: "1rem",
-            background: "transparent",
             border: 0,
             outline: 0,
+            background: "transparent",
             cursor: "pointer",
             whiteSpace: "nowrap",
-            "&:hover": {
-                color: "indigo"
-            }
         }
     }
 });
 
-const links = [
-    {href: "https://github.com/vercel/next.js", label: "Github"},
-    {href: "https://nextjs.org/docs", label: "Docs"},
+
+const links: ISubredditLink[] = [
+    {
+        href: "https://github.com/vercel/next.js", label: "Github"
+    },
+    {
+        href: "https://nextjs.org/docs", label: "DOcs",
+    }
 ];
 
-
 export const Nav = () => {
+    const [session, loading] = useSession();
 
-    const [subreddits, setSubreddits] = useState<Subreddit[]>([]);
+    const [subreddits, setSubreddits] = useState<IValueLabel[]>([]);
 
     const fetchData = async () => {
-        const res = await fetch("/api/subreddit/all-subredits");
-        const sr = await res.json();
-        console.log("sr===", sr)
-        setSubreddits(sr);
+        try {
+            const res = await fetch("/api/subreddits/all-subredits");
+            const sr = await res.json() as Subreddit[];
+            const arr: IValueLabel[] = [];
+            for(let s of sr) {
+                arr.push({value: ""+s.id, label: s.name});
+            }
+            setSubreddits(arr);
+        } catch(err) {
+            console.error(err);
+        }
     };
 
     useEffect(() => {
         void fetchData();
     }, []);
 
-    const [session, loading] = useSession();
-
-    const handleSignIn = async () => {
-        await signIn();
-    };
-    const handleSignOut = async () => {
+    const handleSignout = async () => {
         await signOut();
     };
 
+    const handleSignin = async () => {
+        await signIn();
+    };
+
     const router = useRouter();
-    const handleSelect = async (v: IValueLabel|null) => {
-        console.log("router.push ", v?.value)
-        if(v) {
-            await router.push("/subreddits/"+v.value);
+    const handleSelect = (sr: IValueLabel|null, _actionMeta: ActionMeta<IValueLabel>) => {
+        if(sr) {
+            void router.push(`/subreddits/${sr.value}`);
         }
     };
 
-
     const classes = useStyles();
 
-    const options: IValueLabel[] = subreddits.map( (sr: Subreddit) => ({label: sr["name"], value: sr["id"]}) );
-
-    let jsxLogin;
-    if(!session) {
-        jsxLogin = (
-            <div>
-                <button
-                    onClick={handleSignIn}
-                    className={classes.button}
-                >
-                    Login
-                </button>
-            </div>
+    let jsxSign;
+    if(session) {
+        jsxSign = (
+            <button
+                className={`${classes.button} ${classes.hoverIndigo}`}
+                onClick={handleSignout}
+            >
+                Sign out
+            </button>
         );
     } else {
-        jsxLogin = (
-            <div>
-                <button
-                    onClick={handleSignOut}
-                    className={classes.button}
-                >
-                    Sign out
-                </button>
-            </div>
+        jsxSign = (
+            <button
+                className={`${classes.button} ${classes.hoverIndigo}`}
+                onClick={handleSignin}
+            >
+                Sign in
+            </button>
         );
     }
 
     return (
         <nav className={classes.nav}>
             <div className={classes.container}>
-                <Link href={"/"} className={classes.link1}>
-                    <div className={classes.ball} />
-                    <span className={classes.anchor}>reddit</span>
+                <Link href={"/"}>
+                    <a className={classes.link} href={"#"}>
+                        <div className={classes.ball} />
+                    </a>
+                </Link>
+                <Link href={"/"}>
+                    <a className={`${classes.link} ${classes.adaptiveHide} ${classes.hoverIndigo}`} href={"#"}>
+                        reddit
+                    </a>
                 </Link>
             </div>
-            <div className={classes.selectorContainer}>
-                <Select options={options} className={classes.selector} onChange={handleSelect}/>
+
+            <div className={classes.selectContainer}>
+                <Select
+                    className={classes.select}
+                    options={subreddits}
+                    instanceId={"dfdf"}
+                    onChange = {handleSelect}
+                />
             </div>
 
-            <h3 className={classes.welcome}>
-                Welcome {session?.user?.name}
+            <h3 className={`${classes.welcome} ${classes.adaptiveHide}`}>
+                Welcome {loading ? "" : session?.user?.name }
             </h3>
-            {jsxLogin}
+
+            <div className={classes.signContainer}>
+                {jsxSign}
+            </div>
         </nav>
-    );
-};
+    )
+}

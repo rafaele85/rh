@@ -1,30 +1,23 @@
-import { useSession} from 'next-auth/client'
-import {Main} from "../components/main";
-import {signIn} from 'next-auth/client'
+import {makeStyles, Theme} from "@material-ui/core";
+import {signIn, signOut, useSession} from "next-auth/client";
 import {Nav} from "../components/nav";
 import {Layout} from "../components/layout";
 
+const useStyles = makeStyles((theme: Theme) => {
+    return {
+        container: {
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+        },
+    }
+});
+
 export default function Home() {
-  const [ session, loading ] = useSession();
-
-  const handleClick = async () => {
-      await signIn();
-  };
-
-  if(session) {
+    const classes = useStyles();
     return (
         <Layout>
-            <Main />
+            reddit content
         </Layout>
     );
-  }
-  return (
-      <Layout>
-          Not signed in <br />
-          <button onClick={handleClick}>Sign In</button>
-      </Layout>
-  );
 }
-
-
-
